@@ -1,0 +1,23 @@
+WITH session_duration as (
+    SELECT
+        id_user,
+        id,
+        DATE(s1.date_action) as day,
+        DATE_DIFF(s1.date_action, s2.date_action, SECOND) / 3600 as duration
+    FROM users_sessions as s1
+    JOIN users_sessions as s2
+        ON s1.id_user = s2.id_user
+        AND s1.id = s2.id
+        AND s1.action = "open"
+        AND s2.action = "close"
+    WHERE date_action >= DATE_ADD(DAY, -9, GETDATE())
+)
+
+SELECT
+    id_user,
+    day,
+    SUM(duration) as summary_duration
+FROM session_duration
+GROUP BY
+    id_user,
+    day
